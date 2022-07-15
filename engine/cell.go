@@ -1,20 +1,5 @@
 package engine
 
-// A Player of the game. Currently, we support only two players.
-type Player int
-
-const (
-	PlayerA = iota
-	PlayerB
-)
-
-func (p Player) NextPlayer() Player {
-	if p == PlayerA {
-		return PlayerB
-	}
-	return PlayerA
-}
-
 // A Cell represents one field on the game board
 type Cell struct {
 	Owner    Player

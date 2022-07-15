@@ -126,14 +126,13 @@ func (b Board) GameOver() bool {
 }
 
 func (b Board) Dump() (dump string) {
-	ownerNames := []string{"A", "B"}
 	for _, row := range b.Cells {
 		for _, cell := range row {
 			var name string
 			if cell.Count == 0 {
 				name = " "
 			} else {
-				name = ownerNames[cell.Owner]
+				name = cell.Owner.String()
 			}
 			dump += fmt.Sprintf("%s%d ", name, cell.Count)
 		}
@@ -146,6 +145,25 @@ func (b Board) Sum() (sum int) {
 	for _, row := range b.Cells {
 		for _, cell := range row {
 			sum += cell.Count
+		}
+	}
+	return
+}
+
+func (b Board) Score() (scores map[Player]int) {
+	scores = make(map[Player]int)
+	for _, player := range Players() {
+		scores[player] = 0
+	}
+
+	for _, row := range b.Cells {
+		for _, cell := range row {
+			if cell.Count == 0 {
+				continue
+			}
+			current := scores[cell.Owner]
+			current += cell.Count
+			scores[cell.Owner] = current
 		}
 	}
 	return

@@ -1,6 +1,7 @@
 package gui
 
 import (
+	"criticalmass/bot"
 	"criticalmass/engine"
 	"fmt"
 	"github.com/faiface/pixel"
@@ -14,6 +15,7 @@ type UI struct {
 	Y    float64
 	Name string
 	Grid *Grid
+	Bot  *bot.ExploderBot
 }
 
 const border = 20
@@ -26,6 +28,7 @@ func NewUI(rows, cols int) (ui *UI) {
 		Y:    float64(rows * pixelsPerCell),
 		Name: "critical mass",
 		Grid: NewGrid(b),
+		Bot:  &bot.ExploderBot{Board: b, Player: engine.PlayerB},
 	}
 }
 
@@ -54,11 +57,18 @@ func (ui *UI) Run() {
 }
 
 func (ui *UI) ProcessEvents(win *pixelgl.Window) {
-	if win.JustPressed(pixelgl.MouseButtonLeft) {
-		pos := win.MousePosition()
-		if p, found := ui.Grid.FindCell(pos); found {
-			fmt.Printf("clicked %v. matches cell (%d,%d)\n", pos, p.Row, p.Column)
-			ui.Grid.DoMove(p)
+	if ui.Grid.CurrentPlayer == engine.PlayerA {
+		if win.JustPressed(pixelgl.MouseButtonLeft) {
+			pos := win.MousePosition()
+			if p, found := ui.Grid.FindCell(pos); found {
+				fmt.Printf("clicked %v. matches cell (%d,%d)\n", pos, p.Row, p.Column)
+				ui.Grid.DoMove(p)
+			}
+		}
+	} else {
+		pos, found := ui.Bot.Choose()
+		if found {
+			ui.Grid.DoMove(pos)
 		}
 	}
 }

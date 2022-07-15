@@ -86,6 +86,7 @@ func (g *Grid) maybeStopAnimation() {
 	g.animating = false
 	g.Board.ProcessCriticals()
 	fmt.Printf("board now has %d items\n", g.Board.Sum())
+	fmt.Printf("scores: %v\n", g.Board.Score())
 }
 
 func (g Grid) DrawCell(win pixel.Target, imd *imdraw.IMDraw, cell *engine.Cell, rect pixel.Rect, animate bool) {
