@@ -26,19 +26,15 @@ func (e ExploderBot) getMostCritical() (pos engine.Position, found bool) {
 		remaining int
 	}
 
-	opponent := e.Player.NextPlayer()
-
 	var criticals []critical
-	for r, row := range e.Board.Cells {
-		for c, cell := range row {
-			if cell.Count == 0 || cell.Owner != opponent {
-				criticals = append(criticals, critical{
-					position:  engine.Position{Row: r, Column: c},
-					remaining: cell.Critical - cell.Count,
-				})
-			}
-		}
+	for _, p := range e.Board.PossibleMoves(e.Player) {
+		criticals = append(criticals, critical{
+			position:  p,
+			remaining: e.Board.Cells[p.Row][p.Column].Remaining(),
+		})
+
 	}
+
 	if len(criticals) == 0 {
 		return
 	}

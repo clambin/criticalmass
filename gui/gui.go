@@ -15,7 +15,7 @@ type UI struct {
 	Y    float64
 	Name string
 	Grid *Grid
-	Bot  *bot.ExploderBot
+	Bot  bot.Bot
 }
 
 const border = 20
@@ -28,7 +28,7 @@ func NewUI(rows, cols int) (ui *UI) {
 		Y:    float64(rows * pixelsPerCell),
 		Name: "critical mass",
 		Grid: NewGrid(b),
-		Bot:  &bot.ExploderBot{Board: b, Player: engine.PlayerB},
+		Bot:  &bot.Predictor{Board: b, Player: engine.PlayerB},
 	}
 }
 

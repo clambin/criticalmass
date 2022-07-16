@@ -168,3 +168,33 @@ func (b Board) Score() (scores map[Player]int) {
 	}
 	return
 }
+
+func (b Board) PossibleMoves(player Player) (moves []Position) {
+	for r, row := range b.Cells {
+		for c, cell := range row {
+			if cell.Count == 0 || cell.Owner == player {
+				moves = append(moves, Position{Row: r, Column: c})
+			}
+		}
+	}
+	return
+}
+
+func (b Board) Copy() *Board {
+	cells := make([][]*Cell, b.Rows)
+	for idx, row := range b.Cells {
+		cells[idx] = make([]*Cell, b.Columns)
+		for jdx, cell := range row {
+			cells[idx][jdx] = &Cell{
+				Owner:    cell.Owner,
+				Count:    cell.Count,
+				Critical: cell.Critical,
+			}
+		}
+	}
+	return &Board{
+		Rows:    b.Rows,
+		Columns: b.Columns,
+		Cells:   cells,
+	}
+}

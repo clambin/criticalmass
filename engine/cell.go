@@ -19,6 +19,10 @@ func (c *Cell) Add(player Player, count int, critical bool) bool {
 }
 
 // IsCritical returns true if the cell has achieved critical mass
-func (c *Cell) IsCritical() bool {
+func (c Cell) IsCritical() bool {
 	return c.Count >= c.Critical
+}
+
+func (c Cell) Remaining() int {
+	return c.Critical - c.Count
 }
