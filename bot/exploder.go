@@ -1,12 +1,12 @@
 package bot
 
 import (
-	"criticalmass/engine"
+	"github.com/clambin/criticalmass/engine"
 	"sort"
 )
 
 type Bot interface {
-	Choose() (engine.Position, bool)
+	Choose() (engine.Coordinate, bool)
 }
 
 type ExploderBot struct {
@@ -16,13 +16,13 @@ type ExploderBot struct {
 
 var _ Bot = &ExploderBot{}
 
-func (e ExploderBot) Choose() (pos engine.Position, found bool) {
+func (e ExploderBot) Choose() (pos engine.Coordinate, found bool) {
 	return e.getMostCritical()
 }
 
-func (e ExploderBot) getMostCritical() (pos engine.Position, found bool) {
+func (e ExploderBot) getMostCritical() (pos engine.Coordinate, found bool) {
 	type critical struct {
-		position  engine.Position
+		position  engine.Coordinate
 		remaining int
 	}
 
@@ -30,7 +30,7 @@ func (e ExploderBot) getMostCritical() (pos engine.Position, found bool) {
 	for _, p := range e.Board.PossibleMoves(e.Player) {
 		criticals = append(criticals, critical{
 			position:  p,
-			remaining: e.Board.Cells[p.Row][p.Column].Remaining(),
+			remaining: e.Board.Cells[p].Remaining(),
 		})
 
 	}

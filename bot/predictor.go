@@ -1,7 +1,7 @@
 package bot
 
 import (
-	"criticalmass/engine"
+	"github.com/clambin/criticalmass/engine"
 	"math/rand"
 	"sort"
 )
@@ -13,9 +13,9 @@ type Predictor struct {
 
 var _ Bot = &Predictor{}
 
-func (e Predictor) Choose() (pos engine.Position, found bool) {
+func (e Predictor) Choose() (pos engine.Coordinate, found bool) {
 	type score struct {
-		position  engine.Position
+		position  engine.Coordinate
 		score     int
 		remaining int
 	}
@@ -28,7 +28,7 @@ func (e Predictor) Choose() (pos engine.Position, found bool) {
 		scores = append(scores, score{
 			position:  p,
 			score:     s[e.Player] - s[e.Player.NextPlayer()],
-			remaining: e.Board.Cells[p.Row][p.Column].Remaining(),
+			remaining: e.Board.Cells[p].Remaining(),
 		})
 	}
 	if len(scores) == 0 {

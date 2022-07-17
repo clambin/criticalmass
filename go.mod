@@ -1,4 +1,4 @@
-module criticalmass
+module github.com/clambin/criticalmass
 
 go 1.18
 

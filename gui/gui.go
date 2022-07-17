@@ -1,9 +1,9 @@
 package gui
 
 import (
-	"criticalmass/bot"
-	"criticalmass/engine"
 	"fmt"
+	"github.com/clambin/criticalmass/bot"
+	"github.com/clambin/criticalmass/engine"
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
 	"golang.org/x/image/colornames"
@@ -15,7 +15,8 @@ type UI struct {
 	Y    float64
 	Name string
 	Grid *Grid
-	Bot  bot.Bot
+	BotA bot.Bot
+	BotB bot.Bot
 }
 
 const border = 20
@@ -28,7 +29,8 @@ func NewUI(rows, cols int) (ui *UI) {
 		Y:    float64(rows * pixelsPerCell),
 		Name: "critical mass",
 		Grid: NewGrid(b),
-		Bot:  &bot.Predictor{Board: b, Player: engine.PlayerB},
+		BotA: &bot.Predictor{Board: b, Player: engine.PlayerA},
+		BotB: &bot.Predictor{Board: b, Player: engine.PlayerB},
 	}
 }
 
@@ -48,7 +50,9 @@ func (ui *UI) Run() {
 		win.Clear(colornames.Black)
 		ui.Grid.Draw(win)
 		win.Update()
-		ui.ProcessEvents(win)
+		if !ui.Grid.animating {
+			ui.ProcessEvents(win)
+		}
 		win.SetTitle(fmt.Sprintf("%s (%.1f FPS)", ui.Name, 1.0/time.Since(timestamp).Seconds()))
 		timestamp = time.Now()
 		<-ticker.C
@@ -57,17 +61,22 @@ func (ui *UI) Run() {
 }
 
 func (ui *UI) ProcessEvents(win *pixelgl.Window) {
-	if ui.Grid.CurrentPlayer == engine.PlayerA {
-		if win.JustPressed(pixelgl.MouseButtonLeft) {
-			pos := win.MousePosition()
-			if p, found := ui.Grid.FindCell(pos); found {
-				fmt.Printf("clicked %v. matches cell (%d,%d)\n", pos, p.Row, p.Column)
-				ui.Grid.DoMove(p)
-			}
+	switch ui.Grid.CurrentPlayer {
+	case engine.PlayerA:
+		var (
+			pos   engine.Coordinate
+			found bool
+		)
+		if ui.BotA != nil {
+			pos, found = ui.BotA.Choose()
+		} else if win.JustPressed(pixelgl.MouseButtonLeft) {
+			pos, found = ui.Grid.FindCell(win.MousePosition())
 		}
-	} else {
-		pos, found := ui.Bot.Choose()
 		if found {
+			ui.Grid.DoMove(pos)
+		}
+	case engine.PlayerB:
+		if pos, found := ui.BotB.Choose(); found {
 			ui.Grid.DoMove(pos)
 		}
 	}

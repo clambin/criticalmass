@@ -1,8 +1,8 @@
 package gui
 
 import (
-	"criticalmass/engine"
 	"fmt"
+	"github.com/clambin/criticalmass/engine"
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/imdraw"
 	"github.com/faiface/pixel/text"
@@ -16,7 +16,7 @@ type Grid struct {
 	CurrentPlayer  engine.Player
 	animating      bool
 	animationsLeft int
-	cellsToAnimate []engine.Position
+	cellsToAnimate []engine.Coordinate
 }
 
 func NewGrid(board *engine.Board) *Grid {
@@ -45,7 +45,7 @@ func (g *Grid) Draw(win pixel.Target) {
 	imd := imdraw.New(nil)
 	for row := 0; row < g.Board.Rows; row++ {
 		for column := 0; column < g.Board.Columns; column++ {
-			g.DrawCell(win, imd, g.Board.Cells[row][column], g.Rects[row][column], g.isAnimatedCell(engine.Position{Row: row, Column: column}))
+			g.DrawCell(win, imd, g.Board.Cells[engine.Coordinate{Row: row, Column: column}], g.Rects[row][column], g.isAnimatedCell(engine.Coordinate{Row: row, Column: column}))
 		}
 	}
 	imd.Draw(win)
@@ -53,7 +53,7 @@ func (g *Grid) Draw(win pixel.Target) {
 	g.maybeStopAnimation()
 }
 
-func (g *Grid) isAnimatedCell(position engine.Position) bool {
+func (g *Grid) isAnimatedCell(position engine.Coordinate) bool {
 	for _, pos := range g.cellsToAnimate {
 		if pos == position {
 			return true
@@ -69,7 +69,7 @@ func (g *Grid) maybeSetupAnimation() {
 	g.cellsToAnimate = g.Board.GetCriticals()
 	g.animating = len(g.cellsToAnimate) > 0
 	if g.animating {
-		g.animationsLeft = 5
+		g.animationsLeft = 7
 	} else {
 		g.cellsToAnimate = nil
 	}
@@ -118,18 +118,18 @@ func (g Grid) drawText(win pixel.Target, pos pixel.Vec, cell *engine.Cell, txt s
 	t.Draw(win, pixel.IM)
 }
 
-func (g Grid) FindCell(pos pixel.Vec) (engine.Position, bool) {
+func (g Grid) FindCell(pos pixel.Vec) (engine.Coordinate, bool) {
 	for r, row := range g.Rects {
 		for c, cell := range row {
 			if cell.Contains(pos) {
-				return engine.Position{Row: r, Column: c}, true
+				return engine.Coordinate{Row: r, Column: c}, true
 			}
 		}
 	}
-	return engine.Position{}, false
+	return engine.Coordinate{}, false
 }
 
-func (g *Grid) DoMove(pos engine.Position) {
+func (g *Grid) DoMove(pos engine.Coordinate) {
 	if g.Board.Add(g.CurrentPlayer, pos) {
 		g.CurrentPlayer = g.CurrentPlayer.NextPlayer()
 	}
