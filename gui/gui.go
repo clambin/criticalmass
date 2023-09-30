@@ -10,13 +10,17 @@ import (
 	"time"
 )
 
+type Bot interface {
+	Choose() (engine.Coordinate, bool)
+}
+
 type UI struct {
 	X    float64
 	Y    float64
 	Name string
 	Grid *Grid
-	BotA bot.Bot
-	BotB bot.Bot
+	BotA Bot
+	BotB Bot
 }
 
 const border = 20

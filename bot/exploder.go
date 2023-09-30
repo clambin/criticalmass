@@ -5,16 +5,10 @@ import (
 	"sort"
 )
 
-type Bot interface {
-	Choose() (engine.Coordinate, bool)
-}
-
 type ExploderBot struct {
 	Board  *engine.Board
 	Player engine.Player
 }
-
-var _ Bot = &ExploderBot{}
 
 func (e ExploderBot) Choose() (pos engine.Coordinate, found bool) {
 	return e.getMostCritical()

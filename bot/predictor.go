@@ -12,8 +12,6 @@ type Predictor struct {
 	Player engine.Player
 }
 
-var _ Bot = &Predictor{}
-
 type move struct {
 	position  engine.Coordinate
 	score     int
@@ -28,26 +26,28 @@ func (m move) Compare(other move) int {
 }
 
 func (e Predictor) Choose() (engine.Coordinate, bool) {
-	var scores []move
+	moves := e.getPossibleMoves()
 
+	if len(moves) == 0 {
+		return engine.Coordinate{}, false
+	}
+
+	return selectBestMove(moves).position, true
+}
+
+func (e Predictor) getPossibleMoves() []move {
+	var moves []move
 	for _, p := range e.Board.PossibleMoves(e.Player) {
 		b := e.Board.Copy()
 		b.Add(e.Player, p)
 		s := b.Score()
-		scores = append(scores, move{
+		moves = append(moves, move{
 			position:  p,
 			score:     s[e.Player] - s[e.Player.NextPlayer()],
 			remaining: e.Board.Cells[p].Remaining(),
 		})
 	}
-	var pos engine.Coordinate
-	var found bool
-	if len(scores) != 0 {
-		found = true
-		pos = selectBestMove(scores).position
-	}
-
-	return pos, found
+	return moves
 }
 
 func selectBestMove(candidates []move) move {
@@ -55,6 +55,12 @@ func selectBestMove(candidates []move) move {
 		return a.Compare(b)
 	})
 
+	candidates = getBestMoves(candidates)
+
+	return candidates[rand.Intn(len(candidates))]
+}
+
+func getBestMoves(candidates []move) []move {
 	var equalCount int
 	for _, candidate := range candidates[1:] {
 		if candidate.Compare(candidates[0]) != 0 {
@@ -62,12 +68,7 @@ func selectBestMove(candidates []move) move {
 		}
 		equalCount++
 	}
-
-	if equalCount == 0 {
-		return candidates[0]
-	}
-
-	return candidates[rand.Intn(equalCount+1)]
+	return candidates[:equalCount+1]
 }
 
 func selectBestMoveAlt(candidates []move) move {

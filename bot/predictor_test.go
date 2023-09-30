@@ -14,7 +14,7 @@ func TestSelectBestMove(t *testing.T) {
 		wantMoves  set.Set[move]
 	}{
 		{
-			name: "score",
+			name: "based on score",
 			candidates: []move{
 				{position: engine.Coordinate{Row: 0, Column: 0}, score: 0, remaining: 10},
 				{position: engine.Coordinate{Row: 1, Column: 1}, score: 1, remaining: 9},
@@ -24,7 +24,7 @@ func TestSelectBestMove(t *testing.T) {
 			wantMoves: set.Create(move{position: engine.Coordinate{Row: 3, Column: 3}, score: 3, remaining: 7}),
 		},
 		{
-			name: "remaining",
+			name: "based on remaining",
 			candidates: []move{
 				{position: engine.Coordinate{Row: 0, Column: 0}, score: 1, remaining: 10},
 				{position: engine.Coordinate{Row: 1, Column: 1}, score: 1, remaining: 9},
@@ -34,7 +34,7 @@ func TestSelectBestMove(t *testing.T) {
 			wantMoves: set.Create(move{position: engine.Coordinate{Row: 3, Column: 3}, score: 1, remaining: 7}),
 		},
 		{
-			name: "multiple candidates",
+			name: "multiple best",
 			candidates: []move{
 				{position: engine.Coordinate{Row: 0, Column: 0}, score: 1, remaining: 10},
 				{position: engine.Coordinate{Row: 1, Column: 1}, score: 1, remaining: 9},
@@ -46,11 +46,25 @@ func TestSelectBestMove(t *testing.T) {
 				move{position: engine.Coordinate{Row: 3, Column: 3}, score: 1, remaining: 8},
 			),
 		},
+		{
+			name: "all best",
+			candidates: []move{
+				{position: engine.Coordinate{Row: 0, Column: 0}, score: 1, remaining: 8},
+				{position: engine.Coordinate{Row: 1, Column: 1}, score: 1, remaining: 8},
+				{position: engine.Coordinate{Row: 2, Column: 2}, score: 1, remaining: 8},
+				{position: engine.Coordinate{Row: 3, Column: 3}, score: 1, remaining: 8},
+			},
+			wantMoves: set.Create(
+				move{position: engine.Coordinate{Row: 0, Column: 0}, score: 1, remaining: 8},
+				move{position: engine.Coordinate{Row: 1, Column: 1}, score: 1, remaining: 8},
+				move{position: engine.Coordinate{Row: 2, Column: 2}, score: 1, remaining: 8},
+				move{position: engine.Coordinate{Row: 3, Column: 3}, score: 1, remaining: 8},
+			),
+		},
 	}
 
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
-			//t.Parallel()
 			selected := selectBestMove(tt.candidates)
 			assert.True(t, tt.wantMoves.Contains(selected))
 
