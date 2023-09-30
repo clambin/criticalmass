@@ -50,7 +50,7 @@ func TestSelectBestMove(t *testing.T) {
 
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
+			//t.Parallel()
 			selected := selectBestMove(tt.candidates)
 			assert.True(t, tt.wantMoves.Contains(selected))
 
