@@ -1,12 +1,13 @@
 module github.com/clambin/criticalmass
 
-go 1.21
+go 1.22
+
+toolchain go1.22.3
 
 require (
-	github.com/clambin/go-common/set v0.2.0
 	github.com/faiface/pixel v0.10.0
-	github.com/stretchr/testify v1.8.4
-	golang.org/x/image v0.12.0
+	github.com/stretchr/testify v1.9.0
+	golang.org/x/image v0.16.0
 )
 
 require (

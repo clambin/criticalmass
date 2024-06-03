@@ -7,20 +7,23 @@ import (
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
 	"golang.org/x/image/colornames"
+	"slices"
+	"strings"
 	"time"
 )
 
-type Bot interface {
+type Player interface {
 	Choose() (engine.Coordinate, bool)
 }
 
 type UI struct {
-	X    float64
-	Y    float64
-	Name string
-	Grid *Grid
-	BotA Bot
-	BotB Bot
+	X             float64
+	Y             float64
+	Name          string
+	Grid          *Grid
+	PlayerA       Player
+	PlayerB       Player
+	CurrentPlayer engine.Player
 }
 
 const border = 20
@@ -29,12 +32,12 @@ const pixelsPerCell = 100
 func NewUI(rows, cols int) (ui *UI) {
 	b := engine.New(rows, cols)
 	return &UI{
-		X:    float64(cols * pixelsPerCell),
-		Y:    float64(rows * pixelsPerCell),
-		Name: "critical mass",
-		Grid: NewGrid(b),
-		BotA: &bot.Predictor{Board: b, Player: engine.PlayerA},
-		BotB: &bot.Predictor{Board: b, Player: engine.PlayerB},
+		X:       float64(cols * pixelsPerCell),
+		Y:       float64(rows * pixelsPerCell),
+		Name:    "critical mass",
+		Grid:    NewGrid(b),
+		PlayerA: &HumanPlayer{}, //&bot.Predictor{Board: b, Player: engine.PlayerA},
+		PlayerB: &bot.ExploderBot{Board: b, Player: engine.PlayerB},
 	}
 }
 
@@ -48,40 +51,64 @@ func (ui *UI) Run() {
 		panic(err)
 	}
 
+	if humanPlayer, ok := ui.PlayerA.(*HumanPlayer); ok {
+		humanPlayer.win = win
+		humanPlayer.grid = ui.Grid
+	}
+
 	ticker := time.NewTicker(100 * time.Millisecond)
+	defer ticker.Stop()
 	timestamp := time.Now()
-	for !win.Closed() {
+
+	for !ui.Grid.Board.GameOver() {
 		win.Clear(colornames.Black)
 		ui.Grid.Draw(win)
 		win.Update()
 		if !ui.Grid.animating {
 			ui.ProcessEvents(win)
 		}
-		win.SetTitle(fmt.Sprintf("%s (%.1f FPS)", ui.Name, 1.0/time.Since(timestamp).Seconds()))
+		win.SetTitle(ui.title(timestamp))
 		timestamp = time.Now()
 		<-ticker.C
+
 	}
-	ticker.Stop()
+
+	winner, _ := ui.Grid.Board.Winner()
+	fmt.Printf("player %s won! %s", winner.String(), strings.Join(ui.scores(), ", "))
 }
 
-func (ui *UI) ProcessEvents(win *pixelgl.Window) {
-	switch ui.Grid.CurrentPlayer {
+func (ui *UI) title(timestamp time.Time) string {
+	return fmt.Sprintf(
+		"%s (%.1f FPS) - %s",
+		ui.Name,
+		1.0/time.Since(timestamp).Seconds(),
+		strings.Join(ui.scores(), ", "),
+	)
+}
+
+func (ui *UI) scores() []string {
+	scores := ui.Grid.Board.Score()
+	scoreStrings := make([]string, 0, len(scores))
+	for player, score := range scores {
+		scoreStrings = append(scoreStrings, fmt.Sprintf("%s:%d", player, score))
+	}
+	slices.Sort(scoreStrings)
+	return scoreStrings
+}
+
+func (ui *UI) ProcessEvents(_ *pixelgl.Window) {
+	var player *Player
+	switch ui.CurrentPlayer {
 	case engine.PlayerA:
-		var (
-			pos   engine.Coordinate
-			found bool
-		)
-		if ui.BotA != nil {
-			pos, found = ui.BotA.Choose()
-		} else if win.JustPressed(pixelgl.MouseButtonLeft) {
-			pos, found = ui.Grid.FindCell(win.MousePosition())
-		}
-		if found {
-			ui.Grid.DoMove(pos)
-		}
+		player = &ui.PlayerA
 	case engine.PlayerB:
-		if pos, found := ui.BotB.Choose(); found {
-			ui.Grid.DoMove(pos)
+		player = &ui.PlayerB
+	default:
+		return
+	}
+	if pos, found := (*player).Choose(); found {
+		if ui.Grid.Board.Add(ui.CurrentPlayer, pos) {
+			ui.CurrentPlayer = ui.CurrentPlayer.NextPlayer()
 		}
 	}
 }

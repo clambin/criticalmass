@@ -24,11 +24,11 @@ func TestBoard(t *testing.T) {
 
 	board.Add(engine.PlayerA, engine.Coordinate{Row: 0, Column: 0})
 
-	c := board.GetCriticals()
+	c := board.GetCriticalCells()
 	require.Len(t, c, 4)
 	assert.Equal(t, engine.Coordinate{Row: 0, Column: 0}, c[0])
 
-	board.ProcessCriticals()
+	board.ProcessCriticalCells()
 
 	assert.Equal(t, `A1 A1 B3 
 A1 A1  0 
@@ -36,7 +36,7 @@ A1 A1  0
 `, board.Dump())
 
 	board.Add(engine.PlayerB, engine.Coordinate{Row: 0, Column: 2})
-	board.ProcessCriticals()
+	board.ProcessCriticalCells()
 
 	assert.Equal(t, `A1 B2 B1 
 A1 B2 B1 

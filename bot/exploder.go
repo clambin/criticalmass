@@ -1,8 +1,9 @@
 package bot
 
 import (
+	"cmp"
 	"github.com/clambin/criticalmass/engine"
-	"sort"
+	"slices"
 )
 
 type ExploderBot struct {
@@ -10,7 +11,7 @@ type ExploderBot struct {
 	Player engine.Player
 }
 
-func (e ExploderBot) Choose() (pos engine.Coordinate, found bool) {
+func (e ExploderBot) Choose() (engine.Coordinate, bool) {
 	return e.getMostCritical()
 }
 
@@ -30,8 +31,11 @@ func (e ExploderBot) getMostCritical() (pos engine.Coordinate, found bool) {
 	}
 
 	if len(criticals) == 0 {
-		return
+		return engine.Coordinate{}, false
 	}
-	sort.Slice(criticals, func(i, j int) bool { return criticals[i].remaining < criticals[j].remaining })
+	slices.SortFunc(criticals, func(a, b critical) int {
+		return cmp.Compare(a.remaining, b.remaining)
+	})
+
 	return criticals[0].position, true
 }

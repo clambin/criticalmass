@@ -55,12 +55,6 @@ func selectBestMove(candidates []move) move {
 		return a.Compare(b)
 	})
 
-	candidates = getBestMoves(candidates)
-
-	return candidates[rand.Intn(len(candidates))]
-}
-
-func getBestMoves(candidates []move) []move {
 	var equalCount int
 	for _, candidate := range candidates[1:] {
 		if candidate.Compare(candidates[0]) != 0 {
@@ -68,11 +62,12 @@ func getBestMoves(candidates []move) []move {
 		}
 		equalCount++
 	}
-	return candidates[:equalCount+1]
+	candidates = candidates[:equalCount+1]
+	return candidates[rand.Intn(len(candidates))]
 }
 
 func selectBestMoveAlt(candidates []move) move {
-	var bestMoves []move
+	bestMoves := make([]move, 0, len(candidates))
 
 	for _, candidate := range candidates {
 		if len(bestMoves) == 0 {
@@ -80,21 +75,28 @@ func selectBestMoveAlt(candidates []move) move {
 			continue
 		}
 
+		// how does the candidate compare to our current best?
 		order := candidate.Compare(bestMoves[0])
+
+		// worse. discard it.
 		if order == 1 {
 			continue
 		}
 
+		// better. discard current best moves (keeping the slice)
 		if order == -1 {
 			bestMoves = bestMoves[0:0]
 		}
 
+		// add the candidate to the list of best moves
 		bestMoves = append(bestMoves, candidate)
 	}
 
+	// only one best move.
 	if len(bestMoves) == 1 {
 		return bestMoves[0]
 	}
 
+	// multiple best moves. pick a random one.
 	return bestMoves[rand.Intn(len(bestMoves))]
 }

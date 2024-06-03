@@ -13,7 +13,6 @@ import (
 type Grid struct {
 	Board          *engine.Board
 	Rects          [][]pixel.Rect
-	CurrentPlayer  engine.Player
 	animating      bool
 	animationsLeft int
 	cellsToAnimate []engine.Coordinate
@@ -66,7 +65,7 @@ func (g *Grid) maybeSetupAnimation() {
 	if g.animating {
 		return
 	}
-	g.cellsToAnimate = g.Board.GetCriticals()
+	g.cellsToAnimate = g.Board.GetCriticalCells()
 	g.animating = len(g.cellsToAnimate) > 0
 	if g.animating {
 		g.animationsLeft = 7
@@ -84,12 +83,12 @@ func (g *Grid) maybeStopAnimation() {
 		return
 	}
 	g.animating = false
-	g.Board.ProcessCriticals()
-	fmt.Printf("board now has %d items\n", g.Board.Sum())
-	fmt.Printf("scores: %v\n", g.Board.Score())
+	g.Board.ProcessCriticalCells()
+	//fmt.Printf("board now has %d items\n", g.Board.Sum())
+	//fmt.Printf("scores: %v\n", g.Board.Score())
 }
 
-func (g Grid) DrawCell(win pixel.Target, imd *imdraw.IMDraw, cell *engine.Cell, rect pixel.Rect, animate bool) {
+func (g *Grid) DrawCell(win pixel.Target, imd *imdraw.IMDraw, cell *engine.Cell, rect pixel.Rect, animate bool) {
 	if cell.Count > 0 {
 		p := rect.Max.Sub(rect.Min).Scaled(.5).Add(rect.Min)
 		g.drawText(win, p, cell, fmt.Sprintf("%d", cell.Count))
@@ -105,7 +104,7 @@ func (g Grid) DrawCell(win pixel.Target, imd *imdraw.IMDraw, cell *engine.Cell, 
 	imd.Rectangle(thickness)
 }
 
-func (g Grid) drawText(win pixel.Target, pos pixel.Vec, cell *engine.Cell, txt string) {
+func (g *Grid) drawText(win pixel.Target, pos pixel.Vec, cell *engine.Cell, txt string) {
 	t := text.New(pos, text.Atlas7x13)
 	var textColor color.RGBA
 	if cell.Owner == engine.PlayerA {
@@ -118,7 +117,7 @@ func (g Grid) drawText(win pixel.Target, pos pixel.Vec, cell *engine.Cell, txt s
 	t.Draw(win, pixel.IM)
 }
 
-func (g Grid) FindCell(pos pixel.Vec) (engine.Coordinate, bool) {
+func (g *Grid) FindCell(pos pixel.Vec) (engine.Coordinate, bool) {
 	for r, row := range g.Rects {
 		for c, cell := range row {
 			if cell.Contains(pos) {
@@ -127,10 +126,4 @@ func (g Grid) FindCell(pos pixel.Vec) (engine.Coordinate, bool) {
 		}
 	}
 	return engine.Coordinate{}, false
-}
-
-func (g *Grid) DoMove(pos engine.Coordinate) {
-	if g.Board.Add(g.CurrentPlayer, pos) {
-		g.CurrentPlayer = g.CurrentPlayer.NextPlayer()
-	}
 }

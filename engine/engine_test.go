@@ -18,14 +18,16 @@ func TestEngine_SuddenDeath(t *testing.T) {
 
 	for !board.GameOver() {
 		board.Add(player, moves[player])
-		board.ProcessCriticals()
+		for len(board.GetCriticalCells()) > 0 {
+			board.ProcessCriticalCells()
+		}
 		player = player.NextPlayer()
 	}
 
 	winner, won := board.Winner()
 	assert.True(t, won)
 	assert.Equal(t, engine.Player(engine.PlayerA), winner)
-	assert.Equal(t, 63, board.Sum())
+	assert.Equal(t, 60, board.Sum())
 }
 
 func Benchmark_SuddenDeath(b *testing.B) {
@@ -35,17 +37,14 @@ func Benchmark_SuddenDeath(b *testing.B) {
 	}
 	player := engine.Player(engine.PlayerA)
 
-	for i := 0; i < b.N; i++ {
+	for range b.N {
 		board := engine.New(4, 4)
 		for !board.GameOver() {
 			board.Add(player, moves[player])
-			board.ProcessCriticals()
+			for len(board.GetCriticalCells()) > 0 {
+				board.ProcessCriticalCells()
+			}
 			player = player.NextPlayer()
-		}
-
-		winner, won := board.Winner()
-		if !won || winner != engine.PlayerA {
-			b.Fatal("not won or wrong winner")
 		}
 	}
 }
