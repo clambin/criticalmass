@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/clambin/criticalmass/gui"
-	"github.com/faiface/pixel/pixelgl"
+	pixelgl "github.com/gopxl/pixel/v2/backends/opengl"
 )
 
 func main() {
