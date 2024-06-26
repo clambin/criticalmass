@@ -5,7 +5,7 @@ go 1.22.4
 require (
 	github.com/gopxl/pixel/v2 v2.1.0
 	github.com/stretchr/testify v1.9.0
-	golang.org/x/image v0.17.0
+	golang.org/x/image v0.18.0
 )
 
 require (
